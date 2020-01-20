@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>创建房间</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+<body>
+    <div id="app">
+        <template v-if="show_form">
+            <el-row>
+                <el-col :span="8"></el-col>
+            </el-row>
+        </template>
+        <template v-else>
+            <el-row>
+                <el-col :span="10" >
+                    <div class="talk_con2">
+                        <!-- 显示区域 -->
+                        <div class="talk_show" id="words">
+                            <el-scrollbar style="height: 100%" ref="msg-box">
+                                <!-- 根据vue对象中的数组，遍历出对应的标签。 -->
+                                <div v-for="i in chat.list" :class="i.person==chat.username?'atalk':'btalk'">
+                                    <span>{{ i.person }}：{{ i.words }}</span>
+                                </div>
+                                <div class="ctalk"><span>&nbsp;</span></div>
+                            </el-scrollbar>
+                        </div>
+
+                        <!-- 发送内容区域 -->
+                        <div class="talk_input">
+                            <!-- 请输入内容 -->
+                            <input type="text" class="talk_word" id="talkwords" v-model='chat.message'>
+                            <!-- 按钮 -->
+                            <input type="button" value="发送" class="talk_sub" id="talksub" @click="add_data">
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :span="6">
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>玩家列表</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                        </div>
+                        <el-scrollbar style="height: 100%" ref="msg-box">
+                            <div v-for="username in chat.usernames" class="text item">
+                                {{ username }}
+                            </div>
+                        </el-scrollbar>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </template>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!--    <script src="js/axios.min.js"></script>-->
+    <script type="text/javascript">
+        var app=new Vue({
+            el: '#app',
+            data: {
+                ws: null,
+                show_form: true,
+                rooms: [],
+                chat: {
+                    list: [],
+                    usernames:[],
+                    message: '',
+                    username: '',
+                    room_id: -1,
+                },
+            },
+            created: function(){
+                this.init();
+            },
+            methods: {
+                init: function(){
+                    axios.get('/allroom').then(function (response) {
+                        this.rooms = response.data;
+                        console.log(this.rooms)
+                    }).catch(function (error) {
+                        console.log(error)
+                    })
+                },
+                scrollBottom:function() {
+                    let el = this.$refs["msg-box"].$refs['wrap'];
+                    el.scrollTop = el.scrollHeight;
+                    //el.scrollTo(0,el.scrollHeight)
+                },
+                add_data: function () {
+                    // bug: 内容不能为空。
+                    if (this.chat.message == '') {
+                        alert('请输入内容...')
+                        return;
+                    }
+                    this.ws.send(JSON.stringify({
+                        message: this.chat.message,
+                        username: this.chat.username
+                    }));
+
+                }
+            }
+        });
+    </script>
+</body>
+</html>

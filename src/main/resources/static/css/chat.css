@@ -1,0 +1,94 @@
+.talk_con2{
+    width:600px;
+    height:500px;
+    border:1px solid #666;
+    margin: 30px;
+    float: right;
+    background:#7adbd3;
+}
+.talk_show{
+    width:580px;
+    height:420px;
+    border:1px solid #666;
+    background:#fff;
+    margin:10px auto 0;
+    overflow:auto;
+}
+.talk_input{
+    width:580px;
+    margin:10px auto 0;
+}
+.whotalk{
+    width:80px;
+    height:30px;
+    float:left;
+    outline:none;
+}
+.talk_word{
+    width:500px;
+    height:26px;
+    padding:0px;
+    float:left;
+    margin-left:10px;
+    outline:none;
+    text-indent:10px;
+}
+.talk_sub{
+    width:56px;
+    height:30px;
+    float:left;
+    margin-left:10px;
+}
+.atalk{
+    margin:10px;
+}
+.atalk span{
+    display:inline-block;
+    background:#0181cc;
+    border-radius:10px;
+    color:#fff;
+    padding:5px 10px;
+}
+.btalk{
+    margin:10px;
+    text-align:right;
+}
+.btalk span{
+    display:inline-block;
+    background:#ef8201;
+    border-radius:10px;
+    color:#fff;
+    padding:5px 10px;
+}
+.ctalk{
+    margin:10px;
+}
+.ctalk span{
+    display:inline-block;
+    background:#ffffff;
+    border-radius:10px;
+    color:#fff;
+    padding:5px 10px;
+}
+.el-scrollbar__wrap {
+    overflow-x: hidden;
+}
+.text {
+    font-size: 14px;
+}
+.item {
+    margin-bottom: 18px;
+}
+.clearfix:before,
+.clearfix:after {
+    display: table;
+    content: "";
+}
+.clearfix:after {
+    clear: both
+}
+.box-card {
+    margin: 30px 0;
+    width: 200px;
+    height: 500px;
+}

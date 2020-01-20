@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>创建房间</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+<body>
+    <div id="app">
+        <template v-if="show_form">
+            <el-col :span="8" >
+                <el-form ref="form" :model="form" :rules="rules">
+                    <el-form-item label="房间名" prop="room_name">
+                        <el-input v-model="form.room_name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="房间人数" prop="room_num">
+                        <el-select v-model="form.room_num" placeholder="请选择">
+                            <el-option
+                                    v-for="item in options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                            </el-option>
+                        </el-select>
+                        <el-tooltip effect="dark" content="游戏规则" placement="right">
+                            <i class="el-icon-question"></i>
+                        </el-tooltip>
+                    </el-form-item>
+                    <div v-if="form.room_num=='0'">
+                        <el-form-item label="平民人数" prop="one_num">
+                            <el-input-number v-model="form.one_num" :min="0"></el-input-number>
+                        </el-form-item>
+                        <el-form-item label="卧底人数" prop="two_num">
+                            <el-input-number v-model="form.two_num" :min="0"></el-input-number>
+                        </el-form-item>
+                        <el-form-item label="白板人数" prop="three_num">
+                            <el-input-number v-model="form.three_num" :min="0"></el-input-number>
+                        </el-form-item>
+                    </div>
+                    <el-form-item label="是否需要房间密码">
+                        <el-switch
+                                v-model="form.need_pass"
+                                active-text="是"
+                                inactive-text="否">
+                        </el-switch>
+                    </el-form-item>
+                    <el-form-item label="房间密码" v-if="form.need_pass" prop="need_pass">
+                        <el-input v-model="form.room_pass"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="onSubmit">创建房间</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+        </template>
+        <template v-else>
+            <el-row>
+                <el-col :span="10" >
+                    <div class="talk_con2">
+                        <!-- 显示区域 -->
+                        <div class="talk_show" id="words">
+                            <el-scrollbar style="height: 100%" ref="msg-box">
+                                <!-- 根据vue对象中的数组，遍历出对应的标签。 -->
+                                <div v-for="i in chat.list" :class="i.person==chat.username?'atalk':'btalk'">
+                                    <span>{{ i.person }}：{{ i.words }}</span>
+                                </div>
+                                <div class="ctalk"><span>&nbsp;</span></div>
+                            </el-scrollbar>
+                        </div>
+
+                        <!-- 发送内容区域 -->
+                        <div class="talk_input">
+                            <!-- 请输入内容 -->
+                            <input type="text" class="talk_word" id="talkwords" v-model='chat.message'>
+                            <!-- 按钮 -->
+                            <input type="button" value="发送" class="talk_sub" id="talksub" @click="add_data">
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :span="6">
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>玩家列表</span>
+                            <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+                        </div>
+                        <el-scrollbar style="height: 100%" ref="msg-box">
+                            <div v-for="username in chat.usernames" class="text item">
+                                {{ username }}
+                            </div>
+                        </el-scrollbar>
+                    </el-card>
+                </el-col>
+            </el-row>
+        </template>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!--    <script src="js/axios.min.js"></script>-->
+    <script type="text/javascript">
+        var app=new Vue({
+            el: '#app',
+            data: {
+                ws: null,
+                show_form: true,
+                chat: {
+                    list: [],
+                    usernames:[],
+                    message: '',
+                    username: '',
+                    room_id: -1,
+                },
+                form: {
+                    room_name: '',
+                    room_num: '',
+                    one_num: 0,
+                    two_num: 0,
+                    three_num: 0,
+                    need_pass: false,
+                    room_pass: '',
+                },
+                options: [{
+                    value: '4',
+                    label: '4'
+                }, {
+                    value: '5',
+                    label: '5'
+                }, {
+                    value: '6',
+                    label: '6'
+                }, {
+                    value: '7',
+                    label: '7'
+                }, {
+                    value: '8',
+                    label: '8'
+                },{
+                    value: '0',
+                    label: '自定义'
+                }],
+                rules: {
+                    room_name: [
+                        {required: true, message: '请输入房间名'}
+                    ],
+                    room_num: [
+                        {required: true, message: '请选择房间人数'}
+                    ],
+                    need_pass: [
+                        {required: true, message: '请选择房间密码'}
+                    ],
+                    one_num: [
+                        {required: true, message: '请输入平民数量'}
+                    ],
+                    two_num: [
+                        {required: true, message: '请输入卧底数量'}
+                    ],
+                    three_num: [
+                        {required: true, message: '请输入白板数量'}
+                    ],
+                },
+            },
+            methods: {
+                onSubmit() {
+                    this.$refs['form'].validate((valid) => {
+                        if (valid) {
+                            axios.post('/create', this.form).then(function (response) {
+                                app.chat.username=response.data.username;
+                                app.chat.room_id=response.data.room_id;
+                                app.show_form=false;
+                                var ws = new WebSocket('ws://localhost:1020/game/'+response.data.room_id+'/'+response.data.username);
+                                app.ws= ws;
+
+                                ws.onopen = function (event) {
+                                };
+
+                                ws.onmessage = function (event) {
+                                    var obj = JSON.parse(event.data);
+
+                                    var mode = obj.mode;
+                                    if (mode == 1){
+                                        axios.post('/alluser',{room_id: app.chat.room_id}).then(function (resp) {
+                                            app.chat.usernames = resp.data;
+                                        }).catch(function (err) {
+                                            console.log(err);
+                                        })
+                                    }
+
+                                    var data = {person: obj.username, words: obj.message};
+                                    app.chat.list.push(data);
+                                    // 添加完内容，清空
+                                    app.chat.message = '';
+                                    app.scrollBottom()
+                                };
+
+                                ws.onerror = function (event) {
+                                };
+
+                                ws.onclose = function (event) {
+                                }
+                            }).catch(function (error) {
+                                console.log(error)
+                            });
+                        } else {
+                            console.log('error submit!!');
+                            return false
+                        }
+                    });
+                },
+                scrollBottom:function() {
+                    let el = this.$refs["msg-box"].$refs['wrap'];
+                    el.scrollTop = el.scrollHeight;
+                    //el.scrollTo(0,el.scrollHeight)
+                },
+                add_data: function () {
+                    // bug: 内容不能为空。
+                    if (this.chat.message == '') {
+                        alert('请输入内容...')
+                        return;
+                    }
+                    this.ws.send(JSON.stringify({
+                        message: this.chat.message,
+                        username: this.chat.username
+                    }));
+
+                }
+            }
+        });
+    </script>
+</body>
+</html>
